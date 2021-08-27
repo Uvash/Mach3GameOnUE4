@@ -13,5 +13,5 @@ UCLASS()
 class BALLS_API Amach3GameMode : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+	virtual void BeginPlay() override;
 };

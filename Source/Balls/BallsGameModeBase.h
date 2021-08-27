@@ -14,4 +14,6 @@ class BALLS_API ABallsGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
+	/** Called when the game starts. */
+	//virtual void BeginPlay() override;
 };

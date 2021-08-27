@@ -3,3 +3,8 @@
 
 #include "mach3GameMode.h"
 
+void Amach3GameMode::BeginPlay()
+{
+	Super::BeginPlay();
+
+}

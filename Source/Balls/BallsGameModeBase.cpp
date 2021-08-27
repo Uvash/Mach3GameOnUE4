@@ -2,4 +2,10 @@
 
 
 #include "BallsGameModeBase.h"
+/*
+void ABallsGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
 
+}
+*/
