@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-
 #include "OreActor.generated.h"
 
 
@@ -35,6 +34,8 @@ namespace EOreType
 
 }
 
+class AGrid;
+
 UCLASS()
 class BALLS_API AOreActor : public AActor
 {
@@ -62,6 +63,15 @@ public:
 
 	int32 GetGridAddress();
 
+	void SetMasterGrid(AGrid* NewMaster);
+
+	//Когда кто-ткнул наш кусок руды
+	UFUNCTION(BlueprintCallable, Category = "Ore")
+	void OrePress(ETouchIndex::Type FingerIndex, AActor* TouchedActor);
+
+	UFUNCTION(BlueprintCallable, Category = "Ore")
+	void MoveToNewCell();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -84,4 +94,6 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ore", meta = (AllowPrivateAccess = "true"))
 	int32 OreStatus;
+
+	AGrid* MasterGrid;
 };

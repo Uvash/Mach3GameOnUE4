@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "OreActor.h"
 #include "Grid.h"
+#include "OreActor.h"
+
 
 // Sets default values
 AGrid::AGrid()
@@ -64,16 +65,11 @@ AOreActor* AGrid::AddOreToGrid(FVector SpawnLocation, int32 SpawnGridAddress, in
 		TSubclassOf<class AOreActor> TileToSpawn;
 		// Spawn the tile.
 		AOreActor* NewOre = World->SpawnActor<AOreActor>(UsefulActorBP, SpawnLocation, SpawnRotation, SpawnParams);
-		/*
-		NewTile->GetRenderComponent()->SetMobility(EComponentMobility::Movable);
-		NewTile->TileTypeID = TileTypeID;
-		NewTile->Abilities = TileLibrary[TileTypeID].Abilities;
-		NewTile->SetTileMaterial(TileMaterial);
-		NewTile->SetGridAddress(SpawnGridAddress);
-		*/
+
 		GameTiles[SpawnGridAddress] = NewOre;
 		NewOre->SetOreType(OreTypeID);
 		NewOre->SetGridAddress(SpawnGridAddress);
+		NewOre->SetMasterGrid(this);
 		//UE_LOG(LogTemp, Warning, TEXT("AGrid Add new Ore at %d Type: %d"), SpawnGridAddress, OreTypeID);
 		return NewOre;
 		
@@ -109,6 +105,57 @@ bool AGrid::GetGridAddressWithOffset(int32 InitialGridAddress, int32 XOffset, in
 	return true;
 }
 
+void AGrid::SelectOre(AOreActor* NewSelectedOre)
+{
+	
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid NewSelectedOre if %s"), NewSelectedOre ? TEXT("true") : TEXT("false"));
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid SelectedOre if %s"), SelectedOre ? TEXT("true") : TEXT("false"));
+	if (!NewSelectedOre)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("AGrid NewSelectedOre is null"));
+		return;
+	}
+
+	if (NewSelectedOre == SelectedOre)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("AGrid Call noting"));
+		SelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
+		SelectedOre = nullptr;
+		return;
+	}
+
+	if (NewSelectedOre != SelectedOre && SelectedOre != nullptr)
+	{
+		//UE_LOG(LogTemp, Warning, TEXT("AGrid Call Swap"));
+		SwapOre(NewSelectedOre, SelectedOre);
+		SelectedOre = nullptr;
+		return;
+	}
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid Call SetOreStatus"));
+	SelectedOre = NewSelectedOre;
+	SelectedOre->SetOreStatus(EOreStatus::EOS_Choosen);
+}
+
+void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
+{
+	
+	int32 FirstAddres = FirstSelectedOre->GetGridAddress();
+	int32 SecondAddres = SecondSelectedOre->GetGridAddress();
+
+	FirstSelectedOre->SetGridAddress(SecondAddres);
+	SecondSelectedOre->SetGridAddress(FirstAddres);
+
+	FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
+	SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
+
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid TryToMove"));
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid FirstSelectedOre %d SecondSelectedOre %d"), FirstAddres, SecondAddres);
+	FirstSelectedOre->MoveToNewCell();
+	SecondSelectedOre->MoveToNewCell();
+
+	SelectedOre = nullptr;
+
+}
 
 FVector AGrid::GetLocationFromGridAddress(int32 GridAddress)
 {
@@ -118,7 +165,7 @@ FVector AGrid::GetLocationFromGridAddress(int32 GridAddress)
 	OutLocation.X += TileSize.X * (float)(GridAddress % GridWidth);
 	OutLocation.Y += TileSize.Y * (float)(GridAddress / GridWidth);
 	OutLocation += Center;
-	UE_LOG(LogTemp, Warning, TEXT("AGrid GetLocationFromGridAddress X %f Y %f"), OutLocation.X, OutLocation.Y);
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid GetLocationFromGridAddress X %f Y %f"), OutLocation.X, OutLocation.Y);
 	return OutLocation;
 }
 

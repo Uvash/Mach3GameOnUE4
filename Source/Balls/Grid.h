@@ -27,7 +27,7 @@ public:
 	FVector GetLocationFromGridAddress(int32 GridAddress);
 
 	//Заполняем поле необходимым количеством фигурок
-	UFUNCTION(BlueprintCallable, Category = Initialization)
+	UFUNCTION(BlueprintCallable, Category = "Initialization")
 	void InitGrid();
 	
 	//Размер наших плиток с растоянием между ними
@@ -37,6 +37,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Grid")
 	void AfterPlayStart();
 	void AfterPlayStart_Implementation();
+
+	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
+	void SelectOre(AOreActor* NewSelectedOre);
+
+	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
+	void SwapOre(AOreActor* NewSelectedOre, AOreActor* SelectedOre);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -55,4 +61,6 @@ private:
 	//Хранит тип класса который будем спавнить
 	UPROPERTY(EditDefaultsOnly, Category = "OreSpawning")
 	TSubclassOf<AOreActor> UsefulActorBP;
+
+	AOreActor* SelectedOre;
 };

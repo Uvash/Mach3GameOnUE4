@@ -33,7 +33,7 @@ APlayerPawn::APlayerPawn()
 	CameraComponent->OrthoWidth = 1024.f;
 	CameraComponent->AspectRatio = 3.0f / 4.0f;
 	CameraComponent->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	//CameraComponent->SetWorldRotation(FRotator(-90.0f, 0.0f, -90.0f));
+	CameraComponent->SetWorldRotation(FRotator(0.0f, -90.0f, 90.0f));
 	
 }
 

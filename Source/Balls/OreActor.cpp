@@ -1,9 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "OreActor.h"
+#include "Grid.h"
 #include "PaperSpriteComponent.h"
 #include "Components/ArrowComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "OreActor.h"
+
 
 // Sets default values
 AOreActor::AOreActor()
@@ -78,5 +80,35 @@ int32 AOreActor::GetGridAddress()
 	return GridAddress;
 }
 
+void AOreActor::SetMasterGrid(AGrid* NewMaster)
+{
+	if (NewMaster)
+	{
+		MasterGrid = NewMaster;
+	}
+}
+
+void AOreActor::OrePress(ETouchIndex::Type FingerIndex, AActor* TouchedActor)
+{
+	if (MasterGrid)
+	{
+
+		MasterGrid->SelectOre(this);
+	}
+}
+
+void AOreActor::MoveToNewCell()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("AOreActor Call MoveToNewCell_Implementation"));
+	if (!OreDirection || !OreSprite)
+		return;
+
+	if (!MasterGrid)
+		return;
+
+	FVector NewLocation = MasterGrid->GetLocationFromGridAddress(GridAddress);
+
+	this->SetActorLocation(NewLocation);
+}
 
 
