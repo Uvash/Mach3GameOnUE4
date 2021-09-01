@@ -34,6 +34,11 @@ void AOreActor::Tick(float DeltaTime)
 
 }
 
+int32 AOreActor::GetOreType()
+{
+	return OreType;
+}
+
 void AOreActor::SetOreType_Implementation(int32 NewType)
 {
 	if (CheckType(NewType))

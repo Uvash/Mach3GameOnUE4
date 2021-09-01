@@ -48,6 +48,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
+	UFUNCTION(BlueprintCallable, Category = "Ore")
+	int32 GetOreType();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ore")
 	void SetOreType(int32 NewType);
 	void SetOreType_Implementation(int32 NewType);

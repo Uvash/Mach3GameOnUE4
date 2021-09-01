@@ -31,7 +31,7 @@ public:
 	void InitGrid();
 	
 	//–азмер наших плиток с расто€нием между ними
-	UPROPERTY(EditAnywhere, Category = "Tile")
+	UPROPERTY(EditAnywhere, Category = "Ore")
 	FVector2D TileSize;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Grid")
@@ -43,10 +43,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
 	void SwapOre(AOreActor* NewSelectedOre, AOreActor* SelectedOre);
+
+	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
+	void CheckCombinationOre(int32 ChekedOreAddress);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
 private:
 	TArray<AOreActor*> GameTiles;
 

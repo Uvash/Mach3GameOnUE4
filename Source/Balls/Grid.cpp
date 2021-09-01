@@ -148,10 +148,16 @@ void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
 	FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
 	SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
 
+	GameTiles[FirstAddres] = SecondSelectedOre;
+	GameTiles[SecondAddres] = FirstSelectedOre;
+
 	//UE_LOG(LogTemp, Warning, TEXT("AGrid TryToMove"));
 	//UE_LOG(LogTemp, Warning, TEXT("AGrid FirstSelectedOre %d SecondSelectedOre %d"), FirstAddres, SecondAddres);
 	FirstSelectedOre->MoveToNewCell();
 	SecondSelectedOre->MoveToNewCell();
+
+	CheckCombinationOre(FirstSelectedOre->GetGridAddress());
+	CheckCombinationOre(SecondSelectedOre->GetGridAddress());
 
 	SelectedOre = nullptr;
 
@@ -172,4 +178,48 @@ FVector AGrid::GetLocationFromGridAddress(int32 GridAddress)
 void AGrid::AfterPlayStart_Implementation()
 {
 	return;
+}
+
+void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
+{
+	TArray<int32> RelativesOreAddress;
+	RelativesOreAddress.Add(ChekedOreAddress);
+	//Проверяем соседние тайлы по горизонтали
+
+	int32 WalkingOre = ChekedOreAddress;
+	int32 NeighbourOre;
+	//TODO подумать на запихиванием в функцию...
+	while (true)
+	{
+		if (!GetGridAddressWithOffset(WalkingOre, 1, 0, NeighbourOre))
+			break;
+		
+		if (GameTiles[WalkingOre]->GetOreType() != GameTiles[NeighbourOre]->GetOreType())
+			break;
+
+		RelativesOreAddress.Add(NeighbourOre);
+		WalkingOre = NeighbourOre;
+	}
+
+	WalkingOre = ChekedOreAddress;
+
+	while (true)
+	{
+		if (!GetGridAddressWithOffset(WalkingOre, -1, 0, NeighbourOre))
+			break;
+
+		if (GameTiles[WalkingOre]->GetOreType() != GameTiles[NeighbourOre]->GetOreType())
+			break;
+
+		RelativesOreAddress.Add(NeighbourOre);
+		WalkingOre = NeighbourOre;
+	}
+	
+	if(RelativesOreAddress.Num() >= 3)
+		for (auto RelativesOre : RelativesOreAddress)
+		{
+			GameTiles[RelativesOre]->SetOreStatus(EOreStatus::EOS_Choosen);
+		}
+
+	RelativesOreAddress.Empty();
 }
