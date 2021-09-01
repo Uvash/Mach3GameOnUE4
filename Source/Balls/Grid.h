@@ -65,4 +65,6 @@ private:
 	TSubclassOf<AOreActor> UsefulActorBP;
 
 	AOreActor* SelectedOre;
+
+	void CheckNeighbourOre(TArray<int32> &OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY);
 };

@@ -187,34 +187,11 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 	//Проверяем соседние тайлы по горизонтали
 
 	int32 WalkingOre = ChekedOreAddress;
-	int32 NeighbourOre;
-	//TODO подумать на запихиванием в функцию...
-	while (true)
-	{
-		if (!GetGridAddressWithOffset(WalkingOre, 1, 0, NeighbourOre))
-			break;
-		
-		if (GameTiles[WalkingOre]->GetOreType() != GameTiles[NeighbourOre]->GetOreType())
-			break;
 
-		RelativesOreAddress.Add(NeighbourOre);
-		WalkingOre = NeighbourOre;
-	}
-
+	CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, 1, 0);
 	WalkingOre = ChekedOreAddress;
+	CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, -1, 0);
 
-	while (true)
-	{
-		if (!GetGridAddressWithOffset(WalkingOre, -1, 0, NeighbourOre))
-			break;
-
-		if (GameTiles[WalkingOre]->GetOreType() != GameTiles[NeighbourOre]->GetOreType())
-			break;
-
-		RelativesOreAddress.Add(NeighbourOre);
-		WalkingOre = NeighbourOre;
-	}
-	
 	if(RelativesOreAddress.Num() >= 3)
 		for (auto RelativesOre : RelativesOreAddress)
 		{
@@ -222,4 +199,21 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 		}
 
 	RelativesOreAddress.Empty();
+}
+
+void AGrid::CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY)
+{
+	int32 WalkingOre = CenterOre;
+	int32 NeighbourOre;
+	while (true)
+	{
+		if (!GetGridAddressWithOffset(WalkingOre, OffsetStepX, OffsetStepY, NeighbourOre))
+			break;
+
+		if (GameTiles[WalkingOre]->GetOreType() != GameTiles[NeighbourOre]->GetOreType())
+			break;
+
+		OresArray.Add(NeighbourOre);
+		WalkingOre = NeighbourOre;
+	}
 }
