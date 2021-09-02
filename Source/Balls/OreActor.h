@@ -73,7 +73,9 @@ public:
 	void OrePress(ETouchIndex::Type FingerIndex, AActor* TouchedActor);
 
 	UFUNCTION(BlueprintCallable, Category = "Ore")
-	void MoveToNewCell();
+	void MoveToNewCell(float DeltaTime, bool NeedTeleport = false);
+
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -97,6 +99,9 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ore", meta = (AllowPrivateAccess = "true"))
 	int32 OreStatus;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ore", meta = (AllowPrivateAccess = "true"))
+	float OreSpeed;
 
 	AGrid* MasterGrid;
 };

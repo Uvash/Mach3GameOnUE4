@@ -12,7 +12,7 @@ AOreActor::AOreActor()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	//PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bCanEverTick = true; //Не нужно нам процессить кусок руды
+	PrimaryActorTick.bCanEverTick = true; 
 
 	if (!RootComponent)
 	{
@@ -31,7 +31,13 @@ AOreActor::AOreActor()
 void AOreActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	switch (OreStatus)
+	{
+		case(EOreStatus::EOS_Normal): return;
+		case(EOreStatus::EOS_Moving): MoveToNewCell(DeltaTime);  break;
+		case(EOreStatus::EOS_Choosen):	break;
+		default: UE_LOG(LogTemp, Warning, TEXT("AOreActor have incorrect status: %d"), OreStatus);
+	}
 }
 
 int32 AOreActor::GetOreType()
@@ -53,6 +59,7 @@ void AOreActor::SetOreType_Implementation(int32 NewType)
 
 void AOreActor::SetOreStatus_Implementation(int32 NewStatus)
 {
+	/*
 	if (NewStatus < 0 || NewStatus >= EOreStatus::EOS_NumberOfElements)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("AOreActor try to set incorrect status: %d"), NewStatus);
@@ -61,6 +68,16 @@ void AOreActor::SetOreStatus_Implementation(int32 NewStatus)
 	{
 		OreStatus = NewStatus;
 	}
+	*/
+	UE_LOG(LogTemp, Warning, TEXT("AOreActor Call SetOreStatus_Implementation"));
+	switch (NewStatus)
+	{
+		case(EOreStatus::EOS_Normal):	OreStatus = NewStatus; break;
+		case(EOreStatus::EOS_Moving):	OreStatus = NewStatus; break;
+		case(EOreStatus::EOS_Choosen):	OreStatus = NewStatus; break;
+		default: UE_LOG(LogTemp, Warning, TEXT("AOreActor try to set incorrect status: %d"), NewStatus);
+	}
+	
 }
 
 bool  AOreActor::CheckType(int32 NewType)
@@ -102,18 +119,42 @@ void AOreActor::OrePress(ETouchIndex::Type FingerIndex, AActor* TouchedActor)
 	}
 }
 
-void AOreActor::MoveToNewCell()
+void AOreActor::MoveToNewCell(float DeltaTime, bool NeedTeleport)
 {
-	//UE_LOG(LogTemp, Warning, TEXT("AOreActor Call MoveToNewCell_Implementation"));
+	UE_LOG(LogTemp, Warning, TEXT("AOreActor Call MoveToNewCell"));
 	if (!OreDirection || !OreSprite)
 		return;
 
 	if (!MasterGrid)
 		return;
+	
 
-	FVector NewLocation = MasterGrid->GetLocationFromGridAddress(GridAddress);
+	FVector TargetLocation = MasterGrid->GetLocationFromGridAddress(GridAddress);
+	FVector TargetDirection = TargetLocation - GetActorLocation();
 
-	this->SetActorLocation(NewLocation);
+	if (NeedTeleport || TargetDirection.IsNearlyZero() || TargetDirection.SizeSquared() <= FMath::Square((OreSpeed * DeltaTime)))
+	{
+		SetActorLocation(TargetLocation);
+		SetOreStatus(EOreStatus::EOS_Normal);
+		MasterGrid->CheckCombinationOre(GridAddress);
+		return;
+	}
+		
+
+	//получаем шажок на который нам надо сходить
+	FVector OreStep = TargetDirection * OreSpeed * DeltaTime;
+	FVector OreStepNormal = TargetDirection.GetSafeNormal() * OreSpeed * DeltaTime;
+
+	UE_LOG(LogTemp, Warning, TEXT("AOreActor move tick: %f %f %f"), TargetDirection.X, TargetDirection.Y, TargetDirection.Z);
+	//Если обычный вектор больше нормализованного
+	if (OreStep.SizeSquared() > OreStepNormal.SizeSquared())
+	{
+		SetActorLocation(GetActorLocation() + OreStepNormal);
+	}
+	else
+	{
+		SetActorLocation(GetActorLocation() + OreStep);
+	}
 }
 
 

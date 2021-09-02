@@ -153,11 +153,11 @@ void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
 
 	//UE_LOG(LogTemp, Warning, TEXT("AGrid TryToMove"));
 	//UE_LOG(LogTemp, Warning, TEXT("AGrid FirstSelectedOre %d SecondSelectedOre %d"), FirstAddres, SecondAddres);
-	FirstSelectedOre->MoveToNewCell();
-	SecondSelectedOre->MoveToNewCell();
+	FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
+	SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 
-	CheckCombinationOre(FirstSelectedOre->GetGridAddress());
-	CheckCombinationOre(SecondSelectedOre->GetGridAddress());
+	//CheckCombinationOre(FirstSelectedOre->GetGridAddress());
+	//CheckCombinationOre(SecondSelectedOre->GetGridAddress());
 
 	SelectedOre = nullptr;
 
