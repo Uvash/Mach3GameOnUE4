@@ -11,8 +11,8 @@ UCLASS()
 class BALLS_API AGrid : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AGrid();
 
@@ -28,8 +28,8 @@ public:
 
 	//Заполняем поле необходимым количеством фигурок
 	UFUNCTION(BlueprintCallable, Category = "Initialization")
-	void InitGrid();
-	
+		void InitGrid();
+
 	//Размер наших плиток с растоянием между ними
 	UPROPERTY(EditAnywhere, Category = "Ore")
 	FVector2D TileSize;
@@ -42,23 +42,32 @@ public:
 	void SelectOre(AOreActor* NewSelectedOre);
 
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
-	void SwapOre(AOreActor* NewSelectedOre, AOreActor* SelectedOre);
+	void SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre);
+
+
+	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
+	void RemoveOre(AOreActor* ChoosenOre);
 
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
 	void CheckCombinationOre(int32 ChekedOreAddress);
+
+	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
+	void ReCreateOre(AOreActor* ClicedOre);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 private:
+	TArray <bool> NeedCheckColumn;
 	TArray<AOreActor*> GameTiles;
 
 	UPROPERTY(EditAnywhere, Category = "Tile")
-	int32 GridWidth;
+		int32 GridWidth;
 	UPROPERTY(EditAnywhere, Category = "Tile")
-	int32 GridHeight;
+		int32 GridHeight;
 
 
 	AOreActor* AddOreToGrid(FVector SpawnLocation, int32 SpawnGridAddress, int32 TileTypeID);
+
 
 	//Хранит тип класса который будем спавнить
 	UPROPERTY(EditDefaultsOnly, Category = "OreSpawning")
@@ -66,5 +75,9 @@ private:
 
 	AOreActor* SelectedOre;
 
-	void CheckNeighbourOre(TArray<int32> &OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY);
+	bool CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY);
+
+	void CheckGridColumn();
+
+	void RotateOreColumn(int32 TargetAddress);
 };

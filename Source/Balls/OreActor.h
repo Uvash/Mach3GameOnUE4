@@ -55,6 +55,9 @@ public:
 	void SetOreType(int32 NewType);
 	void SetOreType_Implementation(int32 NewType);
 
+	UFUNCTION(BlueprintCallable, Category = "Ore")
+	int32 GetOreStatus();
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Ore")
 	void SetOreStatus(int32 NewStatus);
 	void SetOreStatus_Implementation(int32 NewStatus);
@@ -75,7 +78,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Ore")
 	void MoveToNewCell(float DeltaTime, bool NeedTeleport = false);
 
-
+	void ForseMoveToLocation(FVector NewLoc);
 
 protected:
 	// Called when the game starts or when spawned

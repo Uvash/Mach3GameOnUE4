@@ -23,13 +23,13 @@ void AGrid::BeginPlay()
 void AGrid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	CheckGridColumn();
 }
 
 
 void AGrid::InitGrid()
 {
-
+	NeedCheckColumn.Init(true, GridWidth);
 	GameTiles.Empty(GridWidth * GridHeight);
 	GameTiles.AddZeroed(GameTiles.Max());
 	FVector SpawnLocation;
@@ -151,8 +151,6 @@ void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
 	GameTiles[FirstAddres] = SecondSelectedOre;
 	GameTiles[SecondAddres] = FirstSelectedOre;
 
-	//UE_LOG(LogTemp, Warning, TEXT("AGrid TryToMove"));
-	//UE_LOG(LogTemp, Warning, TEXT("AGrid FirstSelectedOre %d SecondSelectedOre %d"), FirstAddres, SecondAddres);
 	FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 	SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 
@@ -161,6 +159,14 @@ void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
 
 	SelectedOre = nullptr;
 
+}
+
+
+void AGrid::RemoveOre(AOreActor* ChoosenOre)
+{
+	//GameTiles[SelectedOre->GetGridAddress()] = nullptr;
+	//SelectedOre->ClearOre();
+	return;
 }
 
 FVector AGrid::GetLocationFromGridAddress(int32 GridAddress)
@@ -188,20 +194,26 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 
 	int32 WalkingOre = ChekedOreAddress;
 
-	CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, 1, 0);
+	bool CanCheck = true;
+	CanCheck = CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, 1, 0);
 	WalkingOre = ChekedOreAddress;
-	CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, -1, 0);
+	CanCheck = CanCheck && CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, -1, 0);
 
+	if (!CanCheck) //Если при проверке встречаем двигающиеся куски руды, подходящие нам то они сами вызовут проверку.
+	{
+		return;
+	}
 	if(RelativesOreAddress.Num() >= 3)
 		for (auto RelativesOre : RelativesOreAddress)
 		{
-			GameTiles[RelativesOre]->SetOreStatus(EOreStatus::EOS_Choosen);
+			NeedCheckColumn[RelativesOre % GridWidth] = true;
+			GameTiles[RelativesOre]->SetOreStatus(EOreStatus::EOS_PendingDelete);
 		}
 
 	RelativesOreAddress.Empty();
 }
 
-void AGrid::CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY)
+bool AGrid::CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY)
 {
 	int32 WalkingOre = CenterOre;
 	int32 NeighbourOre;
@@ -213,7 +225,111 @@ void AGrid::CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 
 		if (GameTiles[WalkingOre]->GetOreType() != GameTiles[NeighbourOre]->GetOreType())
 			break;
 
+		if (GameTiles[NeighbourOre]->GetOreStatus() == EOreStatus::EOS_Moving) // Если есть ещё дигающиеся тайлы, то после остановки они вызовут проверку.
+		{
+			return false;
+		}
 		OresArray.Add(NeighbourOre);
 		WalkingOre = NeighbourOre;
 	}
+
+	return true;
+}
+
+void AGrid::CheckGridColumn()
+{
+	for (int Column = 0; Column < NeedCheckColumn.Num(); Column++)
+	{
+		if (NeedCheckColumn[Column])
+		{	/*
+			UE_LOG(LogTemp, Warning, TEXT("AGrid CheckGridColumn start check Column %d"), Column);
+			for (int row = 0; row < GridHeight; row++)
+			{
+				int32 OreAddres = Column + row * GridWidth;
+				int32 OreStatus = GameTiles[OreAddres]->GetOreStatus();
+				
+				if (OreStatus == EOreStatus::EOS_Normal )
+				{
+					continue;
+				}
+				if (OreStatus == EOreStatus::EOS_PendingDelete)
+				{
+					bool needBreak = false;
+					//Пытаемся найти кусок руды с которым можно обменятся.
+					for (int i = row + 1; i < GridHeight; i++)
+					{
+						int32 OreSwapAddres = Column + i * GridWidth;
+						int32 OreSwapStatus = GameTiles[OreSwapAddres]->GetOreStatus();
+						if (OreSwapStatus != EOreStatus::EOS_Normal)
+						{
+							continue;
+						}
+						SwapOre(GameTiles[OreAddres], GameTiles[OreSwapAddres]);
+						break;
+					}
+
+					ReCreateOre(GameTiles[OreAddres]);
+				}
+				*/
+				
+			for (int Row = 0; Row < GridHeight; Row++)
+			{
+				int32 OreAddres;
+				GetGridAddressWithOffset(0, Column, Row, OreAddres);
+				int32 OreStatus = GameTiles[OreAddres]->GetOreStatus();
+
+				if (OreStatus == EOreStatus::EOS_Normal)
+				{
+					continue;
+				}
+				if (OreStatus == EOreStatus::EOS_PendingDelete)
+				{
+					int32 SwapAddress;
+					bool FindSwapOre = false; 
+					for (int32 i = Row + 1; i < GridHeight; i++)
+					{
+						if (GetGridAddressWithOffset(0, Column, i, SwapAddress))
+						{
+							if (GameTiles[SwapAddress]->GetOreStatus() == EOreStatus::EOS_Normal)
+							{
+								SwapOre(GameTiles[OreAddres], GameTiles[SwapAddress]);
+								FindSwapOre = true;
+								break;
+							}		
+						}
+					}
+					//Если не смогли свапнуться.
+					if (!FindSwapOre)
+					{
+						for (int32 i = Row; i < GridHeight; i++)
+						{
+							if (GetGridAddressWithOffset(0, Column, i, SwapAddress))
+							{
+								ReCreateOre(GameTiles[SwapAddress]);
+							}
+						}
+					}
+				}
+			}
+			NeedCheckColumn[Column] = false;
+		}
+	}
+}
+
+void AGrid::ReCreateOre(AOreActor* ClicedOre)
+{
+	int32 SpawnGridAddress = ClicedOre->GetGridAddress();
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid GetGridAddressWithOffset 0 %d %d %d"), width, height, GridAddress);
+	FVector SpawnLocation = GetLocationFromGridAddress(SpawnGridAddress + GridHeight * GridWidth);
+	int32 RandomOreType = FMath::Rand();
+	RandomOreType = RandomOreType % (EOreType::EOT_NumberOfElements);
+	GameTiles[SpawnGridAddress]->SetOreStatus(EOreStatus::EOS_Normal); //Для сброоса увеличения или включения показа спрайта
+	GameTiles[SpawnGridAddress]->SetOreType(RandomOreType);
+	GameTiles[SpawnGridAddress]->ForseMoveToLocation(SpawnLocation);
+	//Отправляем кусок руды в полёт
+	GameTiles[SpawnGridAddress]->SetOreStatus(EOreStatus::EOS_Moving);
+}
+
+void AGrid::RotateOreColumn(int32 TargetAddress)
+{
 }

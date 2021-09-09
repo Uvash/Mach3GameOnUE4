@@ -57,6 +57,11 @@ void AOreActor::SetOreType_Implementation(int32 NewType)
 	}
 }
 
+int32 AOreActor::GetOreStatus()
+{
+	return OreStatus;
+}
+
 void AOreActor::SetOreStatus_Implementation(int32 NewStatus)
 {
 	/*
@@ -112,16 +117,21 @@ void AOreActor::SetMasterGrid(AGrid* NewMaster)
 
 void AOreActor::OrePress(ETouchIndex::Type FingerIndex, AActor* TouchedActor)
 {
+	if (OreStatus == EOreStatus::EOS_Moving)
+	{
+		return;
+	}
+		
 	if (MasterGrid)
 	{
 
 		MasterGrid->SelectOre(this);
+		//MasterGrid->ReCreateOre(this);
 	}
 }
 
 void AOreActor::MoveToNewCell(float DeltaTime, bool NeedTeleport)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AOreActor Call MoveToNewCell"));
 	if (!OreDirection || !OreSprite)
 		return;
 
@@ -145,7 +155,7 @@ void AOreActor::MoveToNewCell(float DeltaTime, bool NeedTeleport)
 	FVector OreStep = TargetDirection * OreSpeed * DeltaTime;
 	FVector OreStepNormal = TargetDirection.GetSafeNormal() * OreSpeed * DeltaTime;
 
-	UE_LOG(LogTemp, Warning, TEXT("AOreActor move tick: %f %f %f"), TargetDirection.X, TargetDirection.Y, TargetDirection.Z);
+	//UE_LOG(LogTemp, Warning, TEXT("AOreActor move tick: %f %f %f"), TargetDirection.X, TargetDirection.Y, TargetDirection.Z);
 	//≈сли обычный вектор больше нормализованного
 	if (OreStep.SizeSquared() > OreStepNormal.SizeSquared())
 	{
@@ -157,4 +167,7 @@ void AOreActor::MoveToNewCell(float DeltaTime, bool NeedTeleport)
 	}
 }
 
-
+void AOreActor::ForseMoveToLocation(FVector NewLoc)
+{
+	SetActorLocation(NewLoc);
+}
