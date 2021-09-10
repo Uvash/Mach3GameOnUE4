@@ -14,4 +14,14 @@ class BALLS_API Amach3GameMode : public AGameModeBase
 {
 	GENERATED_BODY()
 	virtual void BeginPlay() override;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	int32 GetScore();
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	void AddScore(int32 AdditionalScore);
+	UFUNCTION(BlueprintCallable, Category = "Score")
+	void ResetScore();
+private:
+	int32 Score;
 };

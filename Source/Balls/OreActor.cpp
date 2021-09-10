@@ -36,6 +36,7 @@ void AOreActor::Tick(float DeltaTime)
 		case(EOreStatus::EOS_Normal): return;
 		case(EOreStatus::EOS_Moving): MoveToNewCell(DeltaTime);  break;
 		case(EOreStatus::EOS_Choosen):	break;
+		case(EOreStatus::EOS_PendingDelete): break;
 		default: UE_LOG(LogTemp, Warning, TEXT("AOreActor have incorrect status: %d"), OreStatus);
 	}
 }

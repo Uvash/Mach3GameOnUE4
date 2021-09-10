@@ -2,6 +2,7 @@
 
 #include "Grid.h"
 #include "OreActor.h"
+#include "mach3GameMode.h"
 
 
 // Sets default values
@@ -16,7 +17,7 @@ AGrid::AGrid()
 void AGrid::BeginPlay()
 {
 	Super::BeginPlay();
-
+	GameMode = GetWorld()->GetAuthGameMode<Amach3GameMode>();
 }
 
 // Called every frame
@@ -112,13 +113,11 @@ void AGrid::SelectOre(AOreActor* NewSelectedOre)
 	//UE_LOG(LogTemp, Warning, TEXT("AGrid SelectedOre if %s"), SelectedOre ? TEXT("true") : TEXT("false"));
 	if (!NewSelectedOre)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("AGrid NewSelectedOre is null"));
 		return;
 	}
 
 	if (NewSelectedOre == SelectedOre)
 	{
-		//UE_LOG(LogTemp, Warning, TEXT("AGrid Call noting"));
 		SelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
 		SelectedOre = nullptr;
 		return;
@@ -127,6 +126,8 @@ void AGrid::SelectOre(AOreActor* NewSelectedOre)
 	if (NewSelectedOre != SelectedOre && SelectedOre != nullptr)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AGrid Call Swap"));
+		NewSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
+		SelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 		SwapOre(NewSelectedOre, SelectedOre);
 		SelectedOre = nullptr;
 		return;
@@ -145,17 +146,11 @@ void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
 	FirstSelectedOre->SetGridAddress(SecondAddres);
 	SecondSelectedOre->SetGridAddress(FirstAddres);
 
-	FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
-	SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
-
 	GameTiles[FirstAddres] = SecondSelectedOre;
 	GameTiles[SecondAddres] = FirstSelectedOre;
 
-	FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
-	SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
-
-	//CheckCombinationOre(FirstSelectedOre->GetGridAddress());
-	//CheckCombinationOre(SecondSelectedOre->GetGridAddress());
+	//FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
+	//SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 
 	SelectedOre = nullptr;
 
@@ -188,6 +183,7 @@ void AGrid::AfterPlayStart_Implementation()
 
 void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 {
+	UE_LOG(LogTemp, Warning, TEXT("AGrid Call CheckCombinationOre address:: %d"), ChekedOreAddress);
 	TArray<int32> RelativesOreAddress;
 	RelativesOreAddress.Add(ChekedOreAddress);
 	//Проверяем соседние тайлы по горизонтали
@@ -204,13 +200,37 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 		return;
 	}
 	if(RelativesOreAddress.Num() >= 3)
+	{ 
+		for (auto RelativesOre : RelativesOreAddress)
+		{
+			NeedCheckColumn[RelativesOre % GridWidth] = true;
+			GameTiles[RelativesOre]->SetOreStatus(EOreStatus::EOS_PendingDelete);
+			
+		}
+		GameMode->AddScore(RelativesOreAddress.Num() * 10);
+	}
+
+	RelativesOreAddress.Empty();
+
+	RelativesOreAddress.Add(ChekedOreAddress);
+	WalkingOre = ChekedOreAddress;
+	CanCheck = CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, 0, 1);
+	WalkingOre = ChekedOreAddress;
+	CanCheck = CanCheck && CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, 0, -1);
+
+	if (!CanCheck) //Если при проверке встречаем двигающиеся куски руды, подходящие нам то они сами вызовут проверку.
+	{
+		return;
+	}
+	if (RelativesOreAddress.Num() >= 3)
+	{
 		for (auto RelativesOre : RelativesOreAddress)
 		{
 			NeedCheckColumn[RelativesOre % GridWidth] = true;
 			GameTiles[RelativesOre]->SetOreStatus(EOreStatus::EOS_PendingDelete);
 		}
-
-	RelativesOreAddress.Empty();
+		GameMode->AddScore(RelativesOreAddress.Num() * 10);
+	}
 }
 
 bool AGrid::CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY)
@@ -293,6 +313,7 @@ void AGrid::CheckGridColumn()
 							if (GameTiles[SwapAddress]->GetOreStatus() == EOreStatus::EOS_Normal)
 							{
 								SwapOre(GameTiles[OreAddres], GameTiles[SwapAddress]);
+								GameTiles[OreAddres]->SetOreStatus(EOreStatus::EOS_Moving);
 								FindSwapOre = true;
 								break;
 							}		

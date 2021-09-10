@@ -7,6 +7,8 @@
 #include "Grid.generated.h"
 
 class AOreActor;
+class Amach3GameMode;
+
 UCLASS()
 class BALLS_API AGrid : public AActor
 {
@@ -44,7 +46,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
 	void SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre);
 
-
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
 	void RemoveOre(AOreActor* ChoosenOre);
 
@@ -80,4 +81,6 @@ private:
 	void CheckGridColumn();
 
 	void RotateOreColumn(int32 TargetAddress);
+
+	Amach3GameMode* GameMode;
 };

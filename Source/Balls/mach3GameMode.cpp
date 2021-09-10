@@ -6,5 +6,20 @@
 void Amach3GameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	ResetScore();
+}
 
+int32 Amach3GameMode::GetScore()
+{
+	return Score;
+}
+
+void  Amach3GameMode::AddScore(int32 AdditionalScore)
+{
+	Score += AdditionalScore;
+}
+
+void Amach3GameMode::ResetScore()
+{
+	Score = 0;
 }
