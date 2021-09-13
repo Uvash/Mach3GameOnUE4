@@ -120,6 +120,7 @@ void AGrid::SelectOre(AOreActor* NewSelectedOre)
 	{
 		SelectedOre->SetOreStatus(EOreStatus::EOS_Normal);
 		SelectedOre = nullptr;
+		PlayDropOreSounds();
 		return;
 	}
 
@@ -129,12 +130,14 @@ void AGrid::SelectOre(AOreActor* NewSelectedOre)
 		NewSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 		SelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 		SwapOre(NewSelectedOre, SelectedOre);
+		PlayDropOreSounds();
 		SelectedOre = nullptr;
 		return;
 	}
 	//UE_LOG(LogTemp, Warning, TEXT("AGrid Call SetOreStatus"));
 	SelectedOre = NewSelectedOre;
 	SelectedOre->SetOreStatus(EOreStatus::EOS_Choosen);
+	PlayPickOreSounds();
 }
 
 void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
@@ -191,6 +194,7 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 	int32 WalkingOre = ChekedOreAddress;
 
 	bool CanCheck = true;
+	bool NeedPlayDestroySounds = false; //„то бы не проигрывать 2 раза одновременно
 	CanCheck = CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, 1, 0);
 	WalkingOre = ChekedOreAddress;
 	CanCheck = CanCheck && CheckNeighbourOre(RelativesOreAddress, ChekedOreAddress, -1, 0);
@@ -208,6 +212,7 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 			
 		}
 		GameMode->AddScore(RelativesOreAddress.Num() * 10);
+		NeedPlayDestroySounds = true;
 	}
 
 	RelativesOreAddress.Empty();
@@ -230,7 +235,11 @@ void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 			GameTiles[RelativesOre]->SetOreStatus(EOreStatus::EOS_PendingDelete);
 		}
 		GameMode->AddScore(RelativesOreAddress.Num() * 10);
+		NeedPlayDestroySounds = true;
 	}
+
+	if (NeedPlayDestroySounds)
+		PlayDestroyOreLineSounds();
 }
 
 bool AGrid::CheckNeighbourOre(TArray<int32>& OresArray, int32& CenterOre, int32 OffsetStepX, int32 OffsetStepY)
@@ -353,4 +362,19 @@ void AGrid::ReCreateOre(AOreActor* ClicedOre)
 
 void AGrid::RotateOreColumn(int32 TargetAddress)
 {
+}
+
+void AGrid::PlayPickOreSounds_Implementation()
+{
+	return;
+}
+
+void AGrid::PlayDropOreSounds_Implementation()
+{
+	return;
+}
+
+void AGrid::PlayDestroyOreLineSounds_Implementation()
+{
+	return;
 }

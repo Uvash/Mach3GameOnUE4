@@ -57,6 +57,19 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "OreSoundsHelper")
+	void PlayPickOreSounds();
+	void PlayPickOreSounds_Implementation();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "OreSoundsHelper")
+	void PlayDropOreSounds();
+	void PlayDropOreSounds_Implementation();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "OreSoundsHelper")
+	void PlayDestroyOreLineSounds();
+	void PlayDestroyOreLineSounds_Implementation();
+
 private:
 	TArray <bool> NeedCheckColumn;
 	TArray<AOreActor*> GameTiles;
@@ -83,4 +96,5 @@ private:
 	void RotateOreColumn(int32 TargetAddress);
 
 	Amach3GameMode* GameMode;
+
 };

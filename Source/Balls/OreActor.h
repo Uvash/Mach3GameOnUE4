@@ -107,4 +107,5 @@ private:
 	float OreSpeed;
 
 	AGrid* MasterGrid;
+
 };
