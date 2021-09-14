@@ -47,6 +47,9 @@ public:
 	void SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre);
 
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
+	bool CanSwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre);
+
+	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")
 	void RemoveOre(AOreActor* ChoosenOre);
 
 	UFUNCTION(BlueprintCallable, Category = "WorkWithOre")

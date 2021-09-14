@@ -127,6 +127,8 @@ void AGrid::SelectOre(AOreActor* NewSelectedOre)
 	if (NewSelectedOre != SelectedOre && SelectedOre != nullptr)
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("AGrid Call Swap"));
+		if(!CanSwapOre(NewSelectedOre, SelectedOre))
+			return;
 		NewSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 		SelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
 		SwapOre(NewSelectedOre, SelectedOre);
@@ -151,14 +153,25 @@ void AGrid::SwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
 
 	GameTiles[FirstAddres] = SecondSelectedOre;
 	GameTiles[SecondAddres] = FirstSelectedOre;
-
-	//FirstSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
-	//SecondSelectedOre->SetOreStatus(EOreStatus::EOS_Moving);
-
-	SelectedOre = nullptr;
-
 }
 
+bool AGrid::CanSwapOre(AOreActor* FirstSelectedOre, AOreActor* SecondSelectedOre)
+{
+	int32 FirstAddres = FirstSelectedOre->GetGridAddress();
+	int32 SecondAddres = SecondSelectedOre->GetGridAddress();
+
+	if (FMath::Abs(FirstAddres - SecondAddres) == 1)
+	{
+		return true;
+	}
+
+	if (FMath::Abs(FirstAddres - SecondAddres) == GridWidth)
+	{
+		return true;
+	}
+
+	return false;
+}
 
 void AGrid::RemoveOre(AOreActor* ChoosenOre)
 {
@@ -186,7 +199,7 @@ void AGrid::AfterPlayStart_Implementation()
 
 void AGrid::CheckCombinationOre(int32 ChekedOreAddress)
 {
-	UE_LOG(LogTemp, Warning, TEXT("AGrid Call CheckCombinationOre address:: %d"), ChekedOreAddress);
+	//UE_LOG(LogTemp, Warning, TEXT("AGrid Call CheckCombinationOre address:: %d"), ChekedOreAddress);
 	TArray<int32> RelativesOreAddress;
 	RelativesOreAddress.Add(ChekedOreAddress);
 	//Проверяем соседние тайлы по горизонтали
