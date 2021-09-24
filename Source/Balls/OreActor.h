@@ -29,6 +29,8 @@ namespace EOreType
 		EOT_Red 	UMETA(DisplayName = "Red"),
 		EOT_Green	UMETA(DisplayName = "Green"),
 		EOT_Cyan	UMETA(DisplayName = "Cyan"),
+		EOT_Gold	UMETA(DisplayName = "Gold"),
+		EOT_Purple	UMETA(DisplayName = "Purple"),
 		EOT_NumberOfElements  UMETA( Hidden )
 	};
 
